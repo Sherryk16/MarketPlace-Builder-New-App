@@ -50,7 +50,7 @@ export default function FeatureProducts() {
         if (data.length > 0) {
           setProducts(data);
         } else {
-          setError("No products found.");
+          setError("No products found");
         }
       } catch (err) {
         console.error("Error fetching products:", err);
