@@ -1,16 +1,12 @@
-import { IoCartOutline } from "react-icons/io5";
 import { useState, useEffect } from "react";
+import { IoCartOutline } from "react-icons/io5";
 import Image from "next/image";
 
-// Define types for the image asset and product
-interface ImageAsset {
-  _ref: string;
-}
-
+// Define the Product interface
 interface Product {
   name: string;
   price: number;
-  image: { asset: ImageAsset };
+  image: string; // Assuming the image URL is a string
   currentSlug: string;
   quantity: number;
   code: string;
@@ -19,31 +15,24 @@ interface Product {
 export default function FeaturedProductItem({ product }: { product: Product }) {
   const [cart, setCart] = useState<Product[]>([]);
 
-  // Retrieve cart from localStorage on initial load
   useEffect(() => {
-    const savedCart = localStorage.getItem('cart');
+    const savedCart = localStorage.getItem("cart");
     if (savedCart) {
       setCart(JSON.parse(savedCart));
     }
   }, []);
 
   const handleAddToCart = () => {
-    // Add product to the cart
     const updatedCart = [...cart, product];
-
-    // Save the updated cart to localStorage
-    localStorage.setItem('cart', JSON.stringify(updatedCart));
-
-    // Update the state
+    localStorage.setItem("cart", JSON.stringify(updatedCart));
     setCart(updatedCart);
   };
 
   return (
     <div className="group relative w-[250px] flex-shrink-0 bg-white p-4 hover:scale-105 transition-transform mx-auto shadow-lg rounded-md">
-      {/* Product Image and Details */}
       <div className="relative w-full aspect-square flex justify-center items-center bg-gray-100 rounded-md overflow-hidden">
         <Image
-          src={product.image?.asset?._ref || '/placeholder.jpg'} // Use default image if none
+          src={product.image || '/placeholder.jpg'} // Assuming image is a URL
           alt={product.name}
           width={178}
           height={178}

@@ -7,10 +7,10 @@ export const client = createClient({
   dataset,
   apiVersion,
   token: process.env.SANITY_ACCESS_TOKEN,
-  useCdn: true, // Set to false if statically generating pages, using ISR or tag-based revalidation
+  useCdn: true,
 });
 
 const builder = imageUrlBuilder(client);
 
-// Use the correct type for the image source
+// Define type for image source, assuming it’s an object from Sanity image fields
 export const urlFor = (source: object) => builder.image(source);

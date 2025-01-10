@@ -3,34 +3,23 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { getCartFromLocalStorage, saveCartToLocalStorage } from "./CartUtils";
 
-// Define the Product type (adjust it according to your actual product data)
-interface Product {
-  id: string;
-  name: string;
-  code: string;
-  price: number;
-  image: any; // Adjust the type for image (or define it more specifically)
-  currentSlug: string;
-  quantity: number;
-}
-
 interface CartContextType {
-  cart: Product[]; // Use Product[] instead of any[]
-  addToCart: (product: Product) => void;
+  cart: any[];
+  addToCart: (product: any) => void;
   removeFromCart: (productCode: string) => void;
 }
 
 const CartContext = createContext<CartContextType | null>(null);
 
 export const CartProvider = ({ children }: { children: React.ReactNode }) => {
-  const [cart, setCart] = useState<Product[]>([]); // Use Product[] here
+  const [cart, setCart] = useState<any[]>([]);
 
   useEffect(() => {
     const storedCart = getCartFromLocalStorage();
     setCart(storedCart);
   }, []);
 
-  const addToCart = (product: Product) => { // Use Product type
+  const addToCart = (product: any) => {
     const updatedCart = [...cart, product];
     setCart(updatedCart);
     saveCartToLocalStorage(updatedCart);
