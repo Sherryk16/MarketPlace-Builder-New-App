@@ -1,15 +1,21 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import localFont from "next/font/local";
 import "./globals.css";
+import Head from "./Header/Head";
+import Navbar from "./Header/Navbar";
+import Footer from "@/app/Footer/Footer";
+import BrandsSection from "@/app/BrandsSection/page"; // Ensure this is the correct path
+import CartProviderWrapper from "@/app/components/CartProvider"; // Ensure this is the correct path
 
-const geistSans = Geist({
+const geistSans = localFont({
+  src: "./fonts/GeistVF.woff",
   variable: "--font-geist-sans",
-  subsets: ["latin"],
+  weight: "100 900",
 });
-
-const geistMono = Geist_Mono({
+const geistMono = localFont({
+  src: "./fonts/GeistMonoVF.woff",
   variable: "--font-geist-mono",
-  subsets: ["latin"],
+  weight: "100 900",
 });
 
 export const metadata: Metadata = {
@@ -24,11 +30,23 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+        {/* Wrap the application with CartProviderWrapper */}
+        <CartProviderWrapper>
+          <Head />
+          <Navbar />
+          
+          {/* Main Content */}
+          {children}
+            
+         <BrandsSection/>
+          <Footer />
+        </CartProviderWrapper>
       </body>
+      
     </html>
   );
 }
