@@ -8,20 +8,28 @@ import RelatedProducts from '@/app/RelatedProducts/page';
 import { useCart } from "@/app/components/CartProvider";
 import Link from 'next/link';
 
+interface SanityImage {
+  asset: {
+    url: any;
+    _ref: string;
+    _type: string;
+  };
+  url?: string;  // Add url property for direct use cases
+}
+
 interface Product {
   id: string;
-  currentSlug:any;
+  currentSlug: string;
   name: string;
   price: number;
-  image: any;
+  image: SanityImage;  // image can either be a string (URL) or a SanityImage object
   quantity: number;
- 
   discountPrice?: number | null;
   reviews?: string;
   tags?: string[];
   code: string;
   category?: string;
-  colour?: string[];
+  colour?: string | string[];
   description?: string;
 }
 
@@ -63,12 +71,11 @@ const SingleProductPage = () => {
           const fetchedProduct = data[0];
           setProduct({
             id: fetchedProduct._id,
-            currentSlug: id,
+            currentSlug: Array.isArray(id) ? id[0] : id, // Ensure currentSlug is a string
             name: fetchedProduct.name,
             price: typeof fetchedProduct.price === 'string' ? parseFloat(fetchedProduct.price) : fetchedProduct.price,
-            image: fetchedProduct.src,
+            image: fetchedProduct.src || '', // Directly assign the src or empty string
             quantity: 1,
-           
             discountPrice: fetchedProduct.discountPrice || null,
             reviews: fetchedProduct.reviews || '',
             tags: fetchedProduct.tags || [],
@@ -105,7 +112,7 @@ const SingleProductPage = () => {
 
 const ProductDetail = ({ product }: { product: Product }) => {
   const { addToCart } = useCart();
-  const [ setActiveImage] = useState(product.image);
+  const [activeImage, setActiveImage] = useState<string>(getImageUrl(product.image));
 
   const handleThumbnailClick = (img: string) => setActiveImage(img);
 
@@ -117,7 +124,6 @@ const ProductDetail = ({ product }: { product: Product }) => {
       price: product.price,
       image: product.image,
       quantity: 1,
-      
       discountPrice: product.discountPrice,
       reviews: product.reviews,
       tags: product.tags,
@@ -133,23 +139,26 @@ const ProductDetail = ({ product }: { product: Product }) => {
     <div className="grid grid-cols-1 md:grid-cols-[120px_1fr_2fr] gap-4 shadow-lg p-6 rounded-lg bg-white">
       {/* Thumbnails */}
       <div className="flex flex-col items-start gap-4">
-        {[product.image].map((img, index) => (
-          <Image
-            key={index}
-            width={151}
-            height={155}
-            src={img||product.image}
-            alt={`Thumbnail ${index + 1}`}
-            className="w-[151px] h-[155px] object-contain rounded-lg cursor-pointer border border-gray-200 hover:border-blue-500"
-            onClick={() => handleThumbnailClick(img)}
-          />
-        ))}
+        {[product.image].map((img, index) => {
+          const imageUrl = getImageUrl(img); // Use the helper function for image URL extraction
+          return (
+            <Image
+              key={index}
+              width={151}
+              height={155}
+              src={imageUrl}
+              alt={`Thumbnail ${index + 1}`}
+              className="w-[151px] h-[155px] object-contain rounded-lg cursor-pointer border border-gray-200 hover:border-blue-500"
+              onClick={() => handleThumbnailClick(imageUrl)}
+            />
+          );
+        })}
       </div>
 
       {/* Main Image */}
       <div className="flex justify-center items-center bg-slate-200 border border-gray-200 rounded-lg overflow-hidden">
         <Image
-          src={urlFor(product.image).url() || '/placeholder-image.png'}
+          src={activeImage || '/placeholder-image.png'} // Handle image URL
           alt={product.name}
           width={375}
           height={486}
@@ -180,13 +189,18 @@ const ProductDetail = ({ product }: { product: Product }) => {
         <div className="mt-8">
           <h3 className="font-semibold text-[#1A0B5B]">Colour</h3>
           <div className="flex gap-2 mt-2">
-            {product.colour || 'No colours available'}
+            {Array.isArray(product.colour) ? (
+              product.colour.join(', ') // If it's an array, join them as a string
+            ) : (
+              product.colour || 'No colours available' // If it's a single string, display it directly
+            )}
           </div>
         </div>
-         <div>
-          <h1 className='font-semibold text-[#1A0B5B] mt-3'>Description</h1>
-          <h1 className='font-serif text-slate-500 mt-2'>{product.description}</h1>
-         </div>
+
+        <div>
+          <h1 className="font-semibold text-[#1A0B5B] mt-3">Description</h1>
+          <h1 className="font-serif text-slate-500 mt-2">{product.description}</h1>
+        </div>
 
         {/* Categories */}
         <div className="mt-6">
@@ -198,17 +212,6 @@ const ProductDetail = ({ product }: { product: Product }) => {
         <div className="mt-6">
           <h3 className="font-semibold text-[#1A0B5B]">Tags</h3>
           <p className="text-gray-500">{product.tags?.join(', ') || 'No tags available.'}</p>
-        </div>
-
-        {/* Share Icons */}
-        <div className="mt-6  gap-4">
-         <h1 className='font-semibold text-[#1A0B5B]'>Share</h1>
-         <p className='flex gap-2 items-center'>
-         <Link href={'#'}>
-         <Image src={'/insta.png'} width={30} height={30} alt='insta'/></Link>
-         <Link href={'#'}> <Image src={'/fb.png'} width={25} height={25} alt='insta'/></Link>
-         <Link href={'#'}> <Image src={'/twitter.png'} width={30} height={30} alt='insta'/></Link>
-         </p>
         </div>
 
         {/* Add to Cart Button */}
@@ -223,6 +226,16 @@ const ProductDetail = ({ product }: { product: Product }) => {
       </div>
     </div>
   );
+};
+
+// Helper function to safely extract the image URL from the image field
+const getImageUrl = (image: SanityImage | string): string => {
+  if (typeof image === 'string') {
+    return image; // Directly return if it's a string (URL)
+  } else if (image?.asset?.url) {
+    return image.asset.url; // Extract the URL if it's a SanityImage
+  }
+  return '/placeholder-image.png'; // Fallback to a placeholder if no valid URL is found
 };
 
 const DescriptionSection = ({ product }: { product: Product }) => {
@@ -250,9 +263,7 @@ const DescriptionSection = ({ product }: { product: Product }) => {
         {tabs.map((tab) => (
           <button
             key={tab}
-            className={`font-medium ${
-              activeTab === tab ? 'text-[#1A0B5B] border-b-2 border-[#1A0B5B]' : 'text-gray-500'
-            }`}
+            className={`font-medium ${activeTab === tab ? 'text-[#1A0B5B] border-b-2 border-[#1A0B5B]' : 'text-gray-500'}`}
             onClick={() => setActiveTab(tab)}
           >
             {tab}

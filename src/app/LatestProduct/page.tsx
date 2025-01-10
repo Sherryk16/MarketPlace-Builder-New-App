@@ -8,12 +8,21 @@ import { IoCartOutline } from 'react-icons/io5'; // Cart Icon
 import { FaRegHeart } from 'react-icons/fa'; // Heart Icon for Wishlist
 import { useCart } from "@/app/components/CartProvider";
 
+// Define the type for the Sanity image asset
+interface SanityImage {
+  asset: {
+    _ref: string;
+    _type: string;
+  };
+  // Additional fields if necessary
+}
+
 interface Product {
   id: string;
   name: string;
   code: string;
   price: number;
-  image: any;
+  image: SanityImage; // Updated to use the SanityImage type
   currentSlug: string;
   discount: number;
   quantity: number;
@@ -42,7 +51,7 @@ export default function ProductSection() {
         const data = await client.fetch(query, params);
         const formattedData = data.map((item: any) => ({
           id: item.code || `${item.name}-${Math.random()}`,
-          image: item.image,
+          image: item.image, // SanityImage is automatically inferred here
           name: item.name,
           price: item.price,
           discount: item.discount || 0,

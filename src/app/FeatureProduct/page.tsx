@@ -8,19 +8,28 @@ import { FaRegHeart } from "react-icons/fa";
 import { client, urlFor } from "@/sanity/lib/client";
 import { useCart } from "@/app/components/CartProvider"; // Import the useCart hook
 
+interface SanityImage {
+  asset: {
+    _ref: string;
+    _type: string;
+  };
+  url?: string;  // Add url property
+}
+
+
 interface Product {
   id: string;  // Add the 'id' property
   name: string;
   code: string;
   price: number;
-  image:any;
+  image: SanityImage;  // Updated to use the SanityImage type
   currentSlug: string;
   quantity: number;  // Add the 'quantity' property
 }
 
 export default function FeatureProducts() {
   const router = useRouter();
-  const {  addToCart } = useCart(); // Use the addToCart function and cartItems from context
+  const { addToCart } = useCart(); // Use the addToCart function and cartItems from context
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -61,14 +70,13 @@ export default function FeatureProducts() {
   };
 
   // Handle adding a product to the cart
-  const handleAddToCart = (product:Product) => {
+  const handleAddToCart = (product: Product) => {
     const productWithIdAndQuantity = {
       ...product,
       id: product.code,  // You can use the product code as the unique id
       quantity: 1,  // Set the initial quantity to 1
     };
     addToCart(productWithIdAndQuantity); // Add the product to the cart
-
   };
 
   if (loading) return <div>Loading...</div>;

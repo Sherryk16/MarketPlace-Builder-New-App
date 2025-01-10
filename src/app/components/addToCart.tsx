@@ -2,13 +2,18 @@ import { IoCartOutline } from "react-icons/io5";
 import { useState, useEffect } from "react";
 import Image from "next/image";
 
+// Define types for the image asset and product
+interface ImageAsset {
+  _ref: string;
+}
+
 interface Product {
   name: string;
   price: number;
-  image: any;
+  image: { asset: ImageAsset };
   currentSlug: string;
-  quantity: any;
-  code: any;
+  quantity: number;
+  code: string;
 }
 
 export default function FeaturedProductItem({ product }: { product: Product }) {
