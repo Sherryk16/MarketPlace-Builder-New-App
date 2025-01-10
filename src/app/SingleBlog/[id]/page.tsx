@@ -1,12 +1,11 @@
 import Image from "next/image";
-import React from "react";
 import blogs from "@/app/blogs"; // Import blog data
 import CommentSection from "@/app/components/CommentSection";
 import RelatedProducts from "@/app/RelatedProducts/page";
 
 // Server Component for dynamic blog page
 export default function Blog({ params }: { params: { id: string } }) {
-  // Find the blog based on the dynamic id
+  // Find the blog based on the dynamic id from the params
   const blog = blogs.find((blog) => blog.id.toString() === params.id);
 
   if (!blog) return <p>Blog not found.</p>;
@@ -37,14 +36,4 @@ export default function Blog({ params }: { params: { id: string } }) {
       </div>
     </main>
   );
-}
-
-// This will generate static pages at build time
-export async function generateStaticParams() {
-  // Ensure this returns a structure that Next.js can understand
-  const paths = blogs.map((blog) => ({
-    params: { id: blog.id.toString() },
-  }));
-
-  return paths;  // Remove the additional map and return directly
 }
