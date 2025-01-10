@@ -52,7 +52,7 @@ const Head = () => {
                 Wishlist <FaRegHeart className="text-lg" />
               </li>
             </Link>
-            <Link href={"/Cart"}>
+            <Link href={"/cart"}>
               <li className="flex items-center gap-1 relative">
                 <IoCartOutline className="text-2xl" />
                 {cartItems.length > 0 && (
