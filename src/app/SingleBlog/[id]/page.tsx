@@ -1,11 +1,18 @@
+// app/SingleBlog/[id]/page.tsx
+'use client'
+import { useParams } from "next/navigation"; // Import useParams from next/navigation
 import Image from "next/image";
 import blogs from "@/app/blogs"; // Import blog data
 import CommentSection from "@/app/components/CommentSection";
 import RelatedProducts from "@/app/RelatedProducts/page";
 
 // Server Component for dynamic blog page
-export default function Blog({ params }: { params: { id: string } }) {
-  // Find the blog based on the dynamic id from the params
+export default function Blog() {
+  // Use the useParams hook to retrieve the dynamic 'id' parameter
+  const params = useParams(); // This will provide the 'id' parameter from the URL
+
+  if (!params?.id) return <p>Blog not found.</p>;
+
   const blog = blogs.find((blog) => blog.id.toString() === params.id);
 
   if (!blog) return <p>Blog not found.</p>;
