@@ -98,7 +98,7 @@ export default function CartPage() {
           </Link>
         </div>
 
-        <div className="bg-gray-100 p-4 md:p-6 rounded-lg shadow-lg mt-6">
+        <div className="bg-gray-100 p-4 md:p-6 rounded-lg shadow-lg mt-6">A
           <h3 className="text-lg md:text-xl font-bold text-gray-800 mb-4">
             Calculate Shipping
           </h3>

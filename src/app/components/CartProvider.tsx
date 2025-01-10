@@ -1,20 +1,22 @@
-'use client'
-import React, { createContext, useContext, useState } from "react";
+"use client";
 
-// Define a more specific type for image (if it's an object, adjust accordingly)
+import React, { createContext, useContext, useState, useEffect } from "react";
+
+// Define a specific type for image
 interface SanityImage {
   asset: {
     _ref: string;
     _type: string;
   };
-  url?: string;  // Add url property
+  url?: string;
 }
+
 interface Product {
-  currentSlug: string;  // Using slug instead of id
+  currentSlug: string;
   name: string;
   price: number;
-  size?: string | string[];  // Define size as a string or an array of strings
-  image:SanityImage ;  // Specify image type more precisely
+  size?: string | string[];
+  image: SanityImage;
   quantity: number;
 }
 
@@ -27,7 +29,17 @@ interface CartContextProps {
 const CartContext = createContext<CartContextProps | undefined>(undefined);
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [cartItems, setCartItems] = useState<Product[]>([]);
+  const [cartItems, setCartItems] = useState<Product[]>(() => {
+    if (typeof window !== "undefined") {
+      const storedItems = localStorage.getItem("cart");
+      return storedItems ? JSON.parse(storedItems) : [];
+    }
+    return [];
+  });
+
+  useEffect(() => {
+    localStorage.setItem("cart", JSON.stringify(cartItems));
+  }, [cartItems]);
 
   const addToCart = (product: Product) => {
     setCartItems((prevItems) => {
@@ -35,7 +47,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (existingProductIndex >= 0) {
         const updatedCart = [...prevItems];
-        updatedCart[existingProductIndex].quantity += 1;
+        updatedCart[existingProductIndex].quantity += product.quantity;
         return updatedCart;
       } else {
         return [...prevItems, { ...product, quantity: 1 }];
@@ -44,7 +56,15 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const removeFromCart = (slug: string) => {
-    setCartItems((prevItems) => prevItems.filter((item) => item.currentSlug !== slug));
+    setCartItems((prevItems) =>
+      prevItems
+        .map((item) =>
+          item.currentSlug === slug
+            ? { ...item, quantity: item.quantity - 1 }
+            : item
+        )
+        .filter((item) => item.quantity > 0)
+    );
   };
 
   return (
