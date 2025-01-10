@@ -47,7 +47,7 @@ export default function Navbar() {
           </li>
           {isDropdownOpen && (
             <ul className="absolute top-full left-0 bg-white shadow-lg rounded-md mt-2 w-40">
-              <Link href="/about">
+              <Link href="/AboutUs">
                 <li className="px-4 py-2 hover:bg-gray-200 cursor-pointer">
                   About Us
                 </li>
@@ -78,7 +78,7 @@ export default function Navbar() {
           <Link href="/ShopList">
             <li className="hover:text-pink-600 cursor-pointer">Products</li>
           </Link>
-          <Link href="/Pages/Blog">
+          <Link href="/Blog">
             <li className="hover:text-pink-600 cursor-pointer">Blog</li>
           </Link>
           <Link href="/Shop">
