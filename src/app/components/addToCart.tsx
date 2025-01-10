@@ -1,5 +1,6 @@
 import { IoCartOutline } from "react-icons/io5";
 import { useState, useEffect } from "react";
+import Image from "next/image";
 
 interface Product {
   name: string;
@@ -36,7 +37,7 @@ export default function FeaturedProductItem({ product }: { product: Product }) {
     <div className="group relative w-[250px] flex-shrink-0 bg-white p-4 hover:scale-105 transition-transform mx-auto shadow-lg rounded-md">
       {/* Product Image and Details */}
       <div className="relative w-full aspect-square flex justify-center items-center bg-gray-100 rounded-md overflow-hidden">
-        <img
+        <Image
           src={product.image?.asset?._ref || '/placeholder.jpg'} // Use default image if none
           alt={product.name}
           width={178}

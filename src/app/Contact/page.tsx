@@ -1,4 +1,4 @@
-
+import Image from "next/image";
 export default function Contact() {
 
     return (
@@ -89,9 +89,10 @@ export default function Contact() {
   
           {/* Illustration */}
           <div>
-            <img
+            <Image
               src={'/uss.png'}
-              
+              width={400}
+              height={400}
               alt="Contact Illustration"
               className="w-full h-auto"
             />

@@ -1,4 +1,5 @@
 'use client';
+import Image from "next/image";
 import React, { useState } from "react";
 import { useRouter } from "next/navigation"; // Import Next.js router
 import { IoCartOutline } from "react-icons/io5";
@@ -155,8 +156,10 @@ export default function Shop() {
               className="flex flex-col md:flex-row gap-6 p-4 border rounded-md hover:shadow-lg cursor-pointer"
               onClick={() => navigateToDetail(product.id)} // Click event to navigate
             >
-              <img
+              <Image
                 src={product.image}
+                width={36}
+                height={36}
                 alt={product.name}
                 className="w-full md:w-36 h-36 object-cover md:order-none order-first"
               />

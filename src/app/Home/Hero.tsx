@@ -1,7 +1,6 @@
 
 import React from 'react'
-import Image from 'next/image'
-import Link from 'next/link'
+
 import DiscountSection from './Discount'
 import TopCategories from './Top'
 import CustomDiv from './Custom'

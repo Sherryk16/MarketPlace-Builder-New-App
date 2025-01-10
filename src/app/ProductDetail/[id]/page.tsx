@@ -105,7 +105,7 @@ const SingleProductPage = () => {
 
 const ProductDetail = ({ product }: { product: Product }) => {
   const { addToCart } = useCart();
-  const [activeImage, setActiveImage] = useState(product.image);
+  const [ setActiveImage] = useState(product.image);
 
   const handleThumbnailClick = (img: string) => setActiveImage(img);
 

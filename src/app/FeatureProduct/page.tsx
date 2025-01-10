@@ -20,7 +20,7 @@ interface Product {
 
 export default function FeatureProducts() {
   const router = useRouter();
-  const { cartItems, addToCart } = useCart(); // Use the addToCart function and cartItems from context
+  const {  addToCart } = useCart(); // Use the addToCart function and cartItems from context
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);

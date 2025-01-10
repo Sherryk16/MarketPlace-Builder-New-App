@@ -1,4 +1,5 @@
 import blogs from "../blogs"; 
+import Image from "next/image";
 
 export default function CardsGrid() {
   // Limit to the first 3 blogs
@@ -12,8 +13,10 @@ export default function CardsGrid() {
             key={index}
             className="border rounded-lg shadow-md overflow-hidden bg-white transform transition-all duration-300 hover:scale-105 hover:shadow-xl hover:bg-gray-100"
           >
-            <img
+            <Image
               src={card.image}
+              height={48}
+              width={40}
               alt={card.title}
               className="w-full h-48 object-cover transition-opacity duration-300 group-hover:opacity-80"
             />
