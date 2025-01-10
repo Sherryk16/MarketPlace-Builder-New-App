@@ -14,7 +14,7 @@ const Head = () => {
 
   return (
     <div className="bg-violet-600">
-      {/* Top Navbar */}
+      {/* Top Navbar ..*/}
       <div className="flex justify-between items-center h-[44px] px-4 sm:px-8">
         <div className="flex gap-4 sm:gap-10">
           <div className="flex gap-2 items-center font-semibold text-white text-[16px]">
