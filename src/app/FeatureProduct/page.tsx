@@ -16,7 +16,6 @@ interface SanityImage {
   url?: string;  // Add url property
 }
 
-
 interface Product {
   id: string;  // Add the 'id' property
   name: string;
@@ -29,7 +28,7 @@ interface Product {
 
 export default function FeatureProducts() {
   const router = useRouter();
-  const { addToCart } = useCart(); // Use the addToCart function and cartItems from context
+  const { addToCart } = useCart(); // Use the addToCart function from context
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -80,7 +79,7 @@ export default function FeatureProducts() {
   };
 
   if (loading) return <div>Loading...</div>;
-  if (error) return <div>{error}</div>;
+  if (error) return <div className="text-red-500">{error}</div>;
 
   return (
     <div className="py-10 overflow-hidden relative">

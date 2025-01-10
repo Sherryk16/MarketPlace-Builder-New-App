@@ -1,4 +1,4 @@
-"use client";
+'use client'
 
 import { useCart } from "@/app/components/CartProvider";
 import Image from "next/image";
@@ -29,7 +29,7 @@ export default function CartPage() {
               <tr key={item.currentSlug} className="text-center">
                 <td className="p-2 md:p-4 border border-gray-300 flex flex-col md:flex-row items-center gap-4">
                   <Image
-                    src={urlFor(item.image).url()}
+                    src={urlFor(item.image).url() || '/placeholder.jpg'}  // Fallback image
                     alt={item.name}
                     width={60}
                     height={60}
@@ -47,7 +47,7 @@ export default function CartPage() {
                   <div className="flex justify-center items-center gap-2">
                     <button
                       className="px-2 py-1 border border-gray-300 bg-gray-100 rounded-md"
-                      onClick={() => addToCart({ ...item, quantity: 1 })}
+                      onClick={() => addToCart({ ...item, quantity: item.quantity + 1 })}
                     >
                       +
                     </button>
@@ -92,13 +92,13 @@ export default function CartPage() {
             <span>${(calculateSubtotal() + 5).toFixed(2)}</span>
           </div>
           <Link href={'/checkout'}>
-          <button className="w-full bg-green-500 text-white py-2 rounded-md">
-            Proceed to Checkout
-          </button>
+            <button className="w-full bg-green-500 text-white py-2 rounded-md">
+              Proceed to Checkout
+            </button>
           </Link>
         </div>
 
-        <div className="bg-gray-100 p-4 md:p-6 rounded-lg shadow-lg mt-6">A
+        <div className="bg-gray-100 p-4 md:p-6 rounded-lg shadow-lg mt-6">
           <h3 className="text-lg md:text-xl font-bold text-gray-800 mb-4">
             Calculate Shipping
           </h3>

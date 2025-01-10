@@ -1,14 +1,14 @@
-"use client";
+'use client'
 
 import React, { createContext, useContext, useState, useEffect } from "react";
 
-// Define a specific type for image
+// Define a more specific type for image (if it's an object, adjust accordingly)
 interface SanityImage {
   asset: {
     _ref: string;
     _type: string;
   };
-  url?: string;
+  url?: string;  // Add url property
 }
 
 interface Product {
@@ -29,42 +29,41 @@ interface CartContextProps {
 const CartContext = createContext<CartContextProps | undefined>(undefined);
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [cartItems, setCartItems] = useState<Product[]>(() => {
-    if (typeof window !== "undefined") {
-      const storedItems = localStorage.getItem("cart");
-      return storedItems ? JSON.parse(storedItems) : [];
-    }
-    return [];
-  });
+  const [cartItems, setCartItems] = useState<Product[]>([]);
 
   useEffect(() => {
-    localStorage.setItem("cart", JSON.stringify(cartItems));
-  }, [cartItems]);
+    // Sync with localStorage on the client-side only
+    const storedCartItems = localStorage.getItem('cartItems');
+    if (storedCartItems) {
+      setCartItems(JSON.parse(storedCartItems));
+    }
+  }, []);
 
   const addToCart = (product: Product) => {
     setCartItems((prevItems) => {
       const existingProductIndex = prevItems.findIndex((item) => item.currentSlug === product.currentSlug);
+      let updatedCart;
 
       if (existingProductIndex >= 0) {
-        const updatedCart = [...prevItems];
-        updatedCart[existingProductIndex].quantity += product.quantity;
-        return updatedCart;
+        updatedCart = [...prevItems];
+        updatedCart[existingProductIndex].quantity += 1;
       } else {
-        return [...prevItems, { ...product, quantity: 1 }];
+        updatedCart = [...prevItems, { ...product, quantity: 1 }];
       }
+
+      // Sync cartItems with localStorage
+      localStorage.setItem('cartItems', JSON.stringify(updatedCart));
+      return updatedCart;
     });
   };
 
   const removeFromCart = (slug: string) => {
-    setCartItems((prevItems) =>
-      prevItems
-        .map((item) =>
-          item.currentSlug === slug
-            ? { ...item, quantity: item.quantity - 1 }
-            : item
-        )
-        .filter((item) => item.quantity > 0)
-    );
+    setCartItems((prevItems) => {
+      const updatedCart = prevItems.filter((item) => item.currentSlug !== slug);
+      // Sync cartItems with localStorage
+      localStorage.setItem('cartItems', JSON.stringify(updatedCart));
+      return updatedCart;
+    });
   };
 
   return (
