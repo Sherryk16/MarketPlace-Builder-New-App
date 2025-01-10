@@ -6,7 +6,7 @@ import { FaPhoneAlt, FaRegHeart } from "react-icons/fa";
 import { IoCartOutline } from "react-icons/io5";
 import { HiOutlineMenu, HiX } from "react-icons/hi";
 import { useState } from "react";
-import  {useCart } from "@/app/components/CartProvider"; // Ensure this path is correct
+import { useCart } from "@/app/components/CartProvider"; // Ensure this path is correct
 
 const Head = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -14,7 +14,7 @@ const Head = () => {
 
   return (
     <div className="bg-violet-600">
-      {/* Top Navbar ..*/}
+      {/* Top Navbar */}
       <div className="flex justify-between items-center h-[44px] px-4 sm:px-8">
         <div className="flex gap-4 sm:gap-10">
           <div className="flex gap-2 items-center font-semibold text-white text-[16px]">
@@ -74,23 +74,26 @@ const Head = () => {
         <div className="sm:hidden">
           <ul className="flex flex-col items-center text-white gap-4 text-[16px] font-semibold bg-violet-600 p-4">
             <Link href={"/"}>
-              <li>English</li>
+              <li onClick={() => setIsMenuOpen(false)}>English</li>
             </Link>
             <Link href={"/"}>
-              <li>USD</li>
+              <li onClick={() => setIsMenuOpen(false)}>USD</li>
             </Link>
             <Link href={"/Login"}>
-              <li className="flex items-center gap-1">
+              <li onClick={() => setIsMenuOpen(false)} className="flex items-center gap-1">
                 Login <MdAccountCircle className="text-lg" />
               </li>
             </Link>
             <Link href={"/"}>
-              <li className="flex items-center gap-1">
+              <li onClick={() => setIsMenuOpen(false)} className="flex items-center gap-1">
                 Wishlist <FaRegHeart className="text-lg" />
               </li>
             </Link>
-            <Link href={"/cart"}>
-              <li className="flex items-center gap-1 relative">
+            <Link href={"/Cart"}>
+              <li
+                onClick={() => setIsMenuOpen(false)}
+                className="flex items-center gap-1 relative"
+              >
                 <IoCartOutline className="text-lg" />
                 {cartItems.length > 0 && (
                   <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
