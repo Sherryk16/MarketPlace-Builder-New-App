@@ -15,8 +15,8 @@ export default function CardsGrid() {
           >
             <Image
               src={card.image}
-              height={48}
-              width={40}
+              height={150}
+              width={150}
               alt={card.title}
               className="w-full h-48 object-cover transition-opacity duration-300 group-hover:opacity-80"
             />
