@@ -7,23 +7,24 @@ import { IoCartOutline } from "react-icons/io5";
 import { FaRegHeart } from "react-icons/fa";
 import { client, urlFor } from "@/sanity/lib/client";
 import { useCart } from "@/app/components/CartProvider"; // Import the useCart hook
+import PopupMessage from "@/app/components/cartPopup"; // Import the PopupMessage component
 
 interface SanityImage {
   asset: {
     _ref: string;
     _type: string;
   };
-  url?: string;  // Add url property
+  url?: string;
 }
 
 interface Product {
-  id: string;  // Add the 'id' property
+  id: string;
   name: string;
   code: string;
   price: number;
-  image: SanityImage;  // Updated to use the SanityImage type
+  image: SanityImage;
   currentSlug: string;
-  quantity: number;  // Add the 'quantity' property
+  quantity: number;
 }
 
 export default function FeatureProducts() {
@@ -32,6 +33,7 @@ export default function FeatureProducts() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [popupMessage, setPopupMessage] = useState<string | null>(null); // State to control the popup message
 
   // Fetch products on component mount
   useEffect(() => {
@@ -65,17 +67,25 @@ export default function FeatureProducts() {
 
   // Navigate to the product detail page
   const handleNavigate = (slug: string) => {
-    router.push(`/ProductDetail/${slug}`); // Navigate using slug
+    router.push(`/ProductDetail/${slug}`);
   };
 
   // Handle adding a product to the cart
   const handleAddToCart = (product: Product) => {
     const productWithIdAndQuantity = {
       ...product,
-      id: product.code,  // You can use the product code as the unique id
-      quantity: 1,  // Set the initial quantity to 1
+      id: product.code,
+      quantity: 1,
     };
-    addToCart(productWithIdAndQuantity); // Add the product to the cart
+    addToCart(productWithIdAndQuantity);
+
+    // Set the popup message
+    setPopupMessage(`${product.name} added to cart!`);
+
+    // Clear the message after 3 seconds
+    setTimeout(() => {
+      setPopupMessage(null);
+    }, 1000);
   };
 
   if (loading) return <div>Loading...</div>;
@@ -135,15 +145,13 @@ export default function FeatureProducts() {
         ))}
       </div>
 
-      {/* Optional: Scroll Indicators (if needed) */}
-      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">
-        {products.map((_: Product, index: number) => (
-          <div
-            key={index}
-            className="w-3 h-3 rounded-full cursor-pointer bg-gray-300"
-          ></div>
-        ))}
-      </div>
+      {/* Show the PopupMessage component */}
+      {popupMessage && (
+        <PopupMessage
+          message={popupMessage}
+          onClose={() => setPopupMessage(null)}
+        />
+      )}
     </div>
   );
 }

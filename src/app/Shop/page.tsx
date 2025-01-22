@@ -4,93 +4,166 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { IoCartOutline } from "react-icons/io5";
 import { FaRegHeart } from "react-icons/fa";
+import { useEffect, useState } from "react";
+import { client } from "@/sanity/lib/client";
+import { useCart } from "../components/CartProvider";
+import { useSearch } from "@/app/Search/SearchContext"; // Import useSearch from SearchContext
+import PopupMessage from "@/app/components/cartPopup"; // Import the PopupMessage component
 
-export default function Home() {
+interface Product {
+  _id: string;
+  currentSlug: any;
+  name: string;
+  price: number;
+  discountPrice: number;
+  src: any;
+  reviews?: number;
+  tags?: string[];
+  category?: string;
+  colour?: string;
+  description?: string;
+}
+
+export default function Shop() {
+  const { searchQuery, setSearchQuery } = useSearch(); // Get searchQuery and setSearchQuery from context
   const router = useRouter();
+  const { addToCart } = useCart();
+  const [products, setProducts] = useState<Product[]>([]);
+  const [popupMessage, setPopupMessage] = useState<string | null>(null); // State for managing popup message
 
-  const products = [
-    {rating:2, id: 33, name: "Vel elit eiusmod", price: 60, discountPrice: 45, image: "/pr1.png" },
-    {rating:2, id: 34, name: "Ultricies condimentum", price: 75, discountPrice: 50, image: "/pr2.png" },
-    {rating:2, id: 35, name: "Vitae suspendisse", price: 80, discountPrice: 60, image: "/pr3.png" },
-    {rating:2, id: 36, name: "Sed at fermentum", price: 90, discountPrice: 65, image: "/watch1.png" },
-    {rating:2, id: 37, name: "Fusce pellentesque", price: 100, discountPrice: 80, image: "/watch2.png" },
-    {rating:2, id: 38, name: "Vestibulum magna", price: 120, discountPrice: 90, image: "/sofaa1.png" },
-    {rating:2, id: 39, name: "Pellentesque condimentum", price: 85, discountPrice: 70, image: "/sofaa2.png" },
-    {rating:2, id: 40, name: "Cras scelerisque vel it", price: 95, discountPrice: 75, image: "/camera.png" },
-    {rating:2, id: 41, name: "Lectus vulputate faucibus", price: 110, discountPrice: 85, image: "/homesofa.png" },
-    {rating:2, id: 42, name: "Solicitudin amet arcu", price: 105, discountPrice: 90, image: "/pr4.png" },
-    {rating:2, id: 43, name: "Ultrices mauris sit", price: 115, discountPrice: 95, image: "/image17.png" },
-    {rating:2, id: 44, name: "Pariar risus ut", price: 125, discountPrice: 100, image: "/image15.png" },
-  ];
+  // Fetch products from Sanity
+  useEffect(() => {
+    const fetchProducts = async () => {
+      const query = `*[_type in ["product", "latestProduct", "trendingProduct", "relatedProduct"]] {
+        name,
+        price,
+        "src": image.asset->url,
+        discountPrice,
+        reviews,
+        tags,
+        category,
+        colour,
+        description,
+        "currentSlug": slug.current,
+        _id
+      }`;
 
-  const navigateToDetail = (id: number) => {
-    router.push(`/ProductDetail/${id}`);
+      try {
+        const data: Product[] = await client.fetch(query);
+        setProducts(data); // Set the fetched products
+      } catch (error) {
+        console.error("Failed to fetch products:", error);
+      }
+    };
+
+    fetchProducts();
+  }, []);
+
+  // Filter products based on the search query
+  const filteredProducts = products.filter((product) =>
+    product.name.toLowerCase().includes(searchQuery.toLowerCase()) // Filter using the global searchQuery
+  );
+
+  const navigateToDetail = (currentSlug: string) => {
+    router.push(`/ProductDetail/${currentSlug}`);
   };
 
-  const handleAddToCart = (id: number) => {
-    console.log(`Product ${id} added to cart`);
+  const handleAddToWishlist = (currentSlug: string) => {
+    console.log(`Product ${currentSlug} added to wishlist`);
   };
 
-  const handleAddToWishlist = (id: number) => {
-    console.log(`Product ${id} added to wishlist`);
+  const handleAddToCart = (product: Product) => {
+    addToCart({
+      ...product,
+      quantity: 1,
+      image: product.src,
+    });
+
+    // Show popup message when item is added to cart
+    setPopupMessage(`${product.name} added to cart!`);
+
+    // Clear the message after 3 seconds
+    setTimeout(() => {
+      setPopupMessage(null);
+    }, 3000);
   };
 
   return (
     <div className="min-h-screen bg-gray-100 py-8">
       <div className="max-w-7xl mx-auto px-4">
         <h1 className="text-3xl font-bold mb-8">Ecommerce Accessories & Fashion Items</h1>
+
+        {/* Search bar */}
+        <div className="flex mb-6">
+          <input
+            className="w-full md:w-[300px] rounded-md border border-gray-400 px-2 py-1 text-sm"
+            type="text"
+            placeholder="Search for products..."
+            value={searchQuery} // Bind to the global searchQuery
+            onChange={(e) => setSearchQuery(e.target.value)} // Correctly update the global searchQuery
+          />
+        </div>
+
+        {/* Display filtered products */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {products.map((product) => (
-            <div
-              key={product.id}
-              className="bg-white border rounded-md shadow-md p-4 cursor-pointer transform transition-transform hover:scale-105 hover:shadow-lg relative"
-            >
+          {filteredProducts.length > 0 ? (
+            filteredProducts.map((product) => (
               <div
-                className="w-[200]
-                h-[200] flex justify-center items-center"
-                onClick={() => navigateToDetail(product.id)}
+                key={product.currentSlug}
+                className="bg-white border rounded-md shadow-md p-4 cursor-pointer transform transition-transform hover:scale-105 hover:shadow-lg relative"
               >
-                <Image
-                  src={product.image}
-                  alt={product.name}
-                  width={150}
-                  height={150}
-                  className="object-cover rounded-md transition-opacity duration-300 group-hover:opacity-80"
-                />
-              </div>
-              <div className="mt-4">
-                <h3 className="text-lg font-semibold">{product.name}</h3>
-                <div className="flex items-center mt-2">
-                  <span className="text-red-500 font-bold mr-2">${product.discountPrice}</span>
-                  <span className="line-through text-gray-500">${product.price}</span>
-                </div>
-                <div className="text-yellow-500 flex items-center">
-                  {"★".repeat(product.rating)}
-
-                </div>
-              </div>
-
-              {/* Buttons for Add to Cart and Wishlist */}
-              <div className="flex justify-between items-center mt-4">
-                <button
-                  className="flex items-center gap-2 bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition"
-                  onClick={() => handleAddToCart(product.id)}
+                <div
+                  className="w-[200px] h-[200px] flex justify-center items-center"
+                  onClick={() => navigateToDetail(product.currentSlug)}
                 >
-                  <IoCartOutline className="text-lg" />
-                  Add to Cart
-                </button>
-                <button
-                  className="flex items-center gap-2 bg-red-500 text-white py-2 px-4 rounded-md hover:bg-red-600 transition"
-                  onClick={() => handleAddToWishlist(product.id)}
-                >
-                  <FaRegHeart className="text-lg" />
-                  Wishlist
-                </button>
+                  <Image
+                    src={product.src}
+                    alt={product.name}
+                    width={150}
+                    height={150}
+                    className="object-cover rounded-md transition-opacity duration-300 group-hover:opacity-80"
+                  />
+                </div>
+                <div className="mt-4">
+                  <h3 className="text-lg font-semibold">{product.name}</h3>
+                  <div className="flex items-center mt-2">
+                    <span className="text-red-500 font-bold mr-2">${product.discountPrice}</span>
+                    <span className="line-through text-gray-500">${product.price}</span>
+                  </div>
+                </div>
+
+                {/* Buttons for Add to Cart and Wishlist */}
+                <div className="flex justify-between items-center mt-4">
+                  <button
+                    className="flex items-center gap-2 bg-blue-500 text-white py-2 px-4 rounded-md hover:bg-blue-600 transition"
+                    onClick={() => handleAddToCart(product)}
+                  >
+                    <IoCartOutline className="text-lg" />
+                    Add to Cart
+                  </button>
+                  <button
+                    className="flex items-center gap-2 bg-red-500 text-white py-2 px-4 rounded-md hover:bg-red-600 transition"
+                    onClick={() => handleAddToWishlist(product.currentSlug)}
+                  >
+                    <FaRegHeart className="text-lg" />
+                    Wishlist
+                  </button>
+                </div>
               </div>
-            </div>
-          ))}
+            ))
+          ) : (
+            <p>No products found for your search.</p>
+          )}
         </div>
       </div>
+
+      {/* Show the PopupMessage component */}
+      {popupMessage && (
+        <PopupMessage
+          message={popupMessage}
+          onClose={() => setPopupMessage(null)}
+        />
+      )}
     </div>
   );
 }

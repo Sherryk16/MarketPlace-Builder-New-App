@@ -7,6 +7,7 @@ import { IoCartOutline } from "react-icons/io5";
 import { FaRegHeart } from "react-icons/fa";
 import { client, urlFor } from "@/sanity/lib/client";
 import { useCart } from "@/app/components/CartProvider";
+import PopupMessage from "@/app/components/cartPopup"; // Import the PopupMessage component
 
 // Define a type for the image asset
 interface SanityImage {
@@ -34,6 +35,7 @@ export default function FeatureProducts() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [popupMessage, setPopupMessage] = useState<string | null>(null); // State for the popup message
 
   // Fetch products on component mount
   useEffect(() => {
@@ -77,6 +79,14 @@ export default function FeatureProducts() {
       quantity: 1,  // Set the initial quantity to 1
     };
     addToCart(productWithIdAndQuantity); // Add the product to the cart
+
+    // Show popup message when item is added to cart
+    setPopupMessage(`${product.name} added to cart!`);
+
+    // Clear the message after 3 seconds
+    setTimeout(() => {
+      setPopupMessage(null);
+    }, 3000);
   };
 
   if (loading) return <div>Loading...</div>;
@@ -102,17 +112,17 @@ export default function FeatureProducts() {
               <div className="relative w-full aspect-square flex justify-center items-center bg-gray-100 rounded-md overflow-hidden">
                 {/* Check if image exists and use the URL */}
                 {item.image?.asset?._ref ? (
-                               <Image
-                                 src={urlFor(item.image).url()}
-                                 width={178}
-                                 height={178}
-                                 alt={item.name}
-                               />
-                             ) : (
-                               <div className="w-[178px] h-[178px] bg-gray-200 flex items-center justify-center">
-                                 <p>No Image</p>
-                               </div>
-                             )}
+                  <Image
+                    src={urlFor(item.image).url()}
+                    width={178}
+                    height={178}
+                    alt={item.name}
+                  />
+                ) : (
+                  <div className="w-[178px] h-[178px] bg-gray-200 flex items-center justify-center">
+                    <p>No Image</p>
+                  </div>
+                )}
                 <div className="absolute top-2 left-2 flex space-x-2 opacity-0 group-hover:opacity-100 transition-opacity">
                   <button
                     className="p-2 rounded-full shadow-md hover:bg-gray-200 transition"
@@ -141,6 +151,14 @@ export default function FeatureProducts() {
           );
         })}
       </div>
+
+      {/* Show the PopupMessage component */}
+      {popupMessage && (
+        <PopupMessage
+          message={popupMessage}
+          onClose={() => setPopupMessage(null)}
+        />
+      )}
 
       {/* Optional: Scroll Indicators (if needed) */}
       <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2">

@@ -12,6 +12,7 @@ interface SanityImage {
 }
 
 interface Product {
+  _id: any;
   currentSlug: string;
   name: string;
   price: number;

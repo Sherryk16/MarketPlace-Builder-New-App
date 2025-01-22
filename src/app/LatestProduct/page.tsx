@@ -7,6 +7,7 @@ import Link from 'next/link'; // Import Link from next/link
 import { IoCartOutline } from 'react-icons/io5'; // Cart Icon
 import { FaRegHeart } from 'react-icons/fa'; // Heart Icon for Wishlist
 import { useCart } from "@/app/components/CartProvider";
+import PopupMessage from "@/app/components/cartPopup"; // Import the PopupMessage component
 
 // Define the type for the Sanity image asset
 interface SanityImage {
@@ -33,6 +34,7 @@ export default function ProductSection() {
   const { addToCart } = useCart(); // Ensure this is set up correctly
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
+  const [popupMessage, setPopupMessage] = useState<string | null>(null); // State to control the popup message
 
   // Handle category click event
   const handleCategoryClick = (category: string) => {
@@ -72,11 +74,19 @@ export default function ProductSection() {
   if (loading) return <p>Loading...</p>;
 
   const handleAddToCart = (product: Product) => {
-    // Pass the correct product object to the cart
+    // Add the product to the cart
     addToCart({
       ...product,
       quantity: 1, // Set initial quantity to 1
     });
+
+    // Set the popup message
+    setPopupMessage(`${product.name} added to cart!`);
+
+    // Clear the message after 3 seconds
+    setTimeout(() => {
+      setPopupMessage(null);
+    }, 3000);
   };
 
   return (
@@ -151,7 +161,7 @@ export default function ProductSection() {
                 {/* Cart Button */}
                 <button
                   className="p-2 rounded-full shadow-md bg-gray-200 hover:bg-gray-300 transition"
-                  onClick={() => handleAddToCart(item)}
+                  onClick={() => handleAddToCart(item)} // Add product to cart
                 >
                   <IoCartOutline className="text-lg text-gray-700" />
                 </button>
@@ -172,6 +182,14 @@ export default function ProductSection() {
           ))
         )}
       </div>
+
+      {/* Show the PopupMessage component */}
+      {popupMessage && (
+        <PopupMessage
+          message={popupMessage}
+          onClose={() => setPopupMessage(null)}
+        />
+      )}
     </div>
   );
 }
