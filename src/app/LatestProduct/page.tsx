@@ -77,7 +77,8 @@ export default function ProductSection() {
     // Add the product to the cart
     addToCart({
       ...product,
-      quantity: 1, // Set initial quantity to 1
+      quantity: 1,
+      _id: undefined
     });
 
     // Set the popup message

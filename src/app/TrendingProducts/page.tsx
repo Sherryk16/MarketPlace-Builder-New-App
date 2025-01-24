@@ -20,7 +20,7 @@ interface SanityImage {
 
 // Define the Product type with the precise image structure
 interface Product {
-  id: string;
+  _id: string;
   name: string;
   code: string;
   price: number;

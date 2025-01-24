@@ -18,7 +18,7 @@ interface SanityImage {
 }
 
 interface Product {
-  id: string;
+  _id: string;
   name: string;
   code: string;
   price: number;
@@ -85,7 +85,7 @@ export default function FeatureProducts() {
     // Clear the message after 3 seconds
     setTimeout(() => {
       setPopupMessage(null);
-    }, 1000);
+    }, 5000);
   };
 
   if (loading) return <div>Loading...</div>;

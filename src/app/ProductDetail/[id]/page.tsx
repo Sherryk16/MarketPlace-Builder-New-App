@@ -18,7 +18,7 @@ interface SanityImage {
 }
 
 interface Product {
-  id: string;
+  _id: string;
   currentSlug: string;
   name: string;
   price: number;
@@ -70,7 +70,7 @@ const SingleProductPage = () => {
         if (data && data.length > 0) {
           const fetchedProduct = data[0];
           setProduct({
-            id: fetchedProduct._id,
+            _id: fetchedProduct._id,
             currentSlug: Array.isArray(id) ? id[0] : id, // Ensure currentSlug is a string
             name: fetchedProduct.name,
             price: typeof fetchedProduct.price === 'string' ? parseFloat(fetchedProduct.price) : fetchedProduct.price,
@@ -118,7 +118,7 @@ const ProductDetail = ({ product }: { product: Product }) => {
 
   const handleAddToCart = () => {
     const productWithIdAndQuantity = {
-      id: product.id,
+      _id: product._id,
       currentSlug: product.currentSlug,
       name: product.name,
       price: product.price,
