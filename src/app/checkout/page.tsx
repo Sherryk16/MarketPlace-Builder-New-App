@@ -1,21 +1,25 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useCart } from "@/app/components/CartProvider";
+import { useState, useEffect } from "react";
+import { useCart } from "@/app/components/CartProvider"; // Assuming you're using a Cart context
 import { urlFor } from "@/sanity/lib/client";
 import { useRouter } from "next/navigation";
-import { client } from "@/sanity/lib/client";
-
+import { useUser, useClerk } from "@clerk/clerk-react"; // Import Clerk's hooks
 import Image from "next/image";
 
 export default function CheckoutPage() {
   const { cartItems } = useCart();
   const router = useRouter();
+  const { isLoaded, isSignedIn } = useUser(); // Get user status from Clerk
+  const { redirectToSignIn } = useClerk(); // Clerk's method to redirect to login page
 
-  const calculateSubtotal = () =>
-    cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  useEffect(() => {
+    // Redirect to login page if not signed in
+    if (isLoaded && !isSignedIn) {
+      redirectToSignIn(); // This will navigate the user to Clerk's login page
+    }
+  }, [isLoaded, isSignedIn, redirectToSignIn]);
 
-  // State for form inputs
   const [formData, setFormData] = useState({
     name: "",
     address: "",
@@ -25,9 +29,23 @@ export default function CheckoutPage() {
     country: "Bangladesh",
     email: "",
     phone: "",
-    carrier: "FedEx", // Default carrier
-    trackingNumber: "",
+    deliveryMethod: "Standard",
   });
+
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const calculateSubtotal = () =>
+    cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
+  const calculateShipping = (method: string) => {
+    const shippingRates: { [key: string]: number } = {
+      Standard: 15,
+      Express: 25,
+      Overnight: 50,
+    };
+    return shippingRates[method] || 15;
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
@@ -36,92 +54,99 @@ export default function CheckoutPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
+    setError("");
 
-    // Create shipment document
-    const shipment = await client.create({
-      _type: "shipment",
-      carrier: formData.carrier,
-      trackingNumber: formData.trackingNumber,
-      status: "Pending",
-      currentLocation: formData.address, // initial location
-      updates: [],
-    });
+    // Simple form validation
+    if (
+      !formData.email ||
+      !formData.name ||
+      !formData.address ||
+      !formData.city ||
+      !formData.postalCode ||
+      !formData.phone
+    ) {
+      setError("Please fill in all required fields.");
+      setIsLoading(false);
+      return;
+    }
 
-    // Create order document in Sanity
-    const order = await client.create({
-      _type: "order",
-      orderId: `ORD-${new Date().getTime()}`,
-      shippingAddress: {
-        name: formData.name,
-        address: formData.address,
-        apartment: formData.apartment,
-        city: formData.city,
-        postalCode: formData.postalCode,
-        country: formData.country,
-      },
-      contactInfo: {
-        email: formData.email,
-        phone: formData.phone,
-      },
-      shipment: {
-        _ref: shipment._id, // Link to the created shipment
-        _type: "reference",
-      },
-      status: "Pending", // Initial order status
-    });
+    try {
+      // Send data to your backend to create a checkout session
+      const response = await fetch("/api/checkout", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          items: cartItems,
+          shippingAddress: formData,
+        }),
+      });
 
-    // Redirect to the order confirmation page (or next step)
-    router.push(`/order/${order.orderId}`);
+      if (!response.ok) {
+        throw new Error(`Failed to create session: ${response.statusText}`);
+      }
+
+      const { id } = await response.json();
+      const stripe = await import("@stripe/stripe-js").then((m) =>
+        m.loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!)
+      );
+
+      if (stripe) {
+        const result = await stripe.redirectToCheckout({ sessionId: id });
+        if (result.error) {
+          setError(result.error.message || "Something went wrong with Stripe.");
+        }
+      }
+    } catch (err) {
+      console.error("Checkout Error:", err);
+      setError("Failed to process payment. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
+
+  if (!isLoaded) return <div>Loading...</div>; // Wait for the Clerk data to load
 
   return (
     <div className="container mx-auto p-4 lg:p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
-      {/* Contact Information and Shipping Address */}
+      {/* Left Section: Form */}
       <div className="lg:col-span-2 bg-gray-50 p-8 rounded-lg shadow-lg">
         <form onSubmit={handleSubmit} className="space-y-8">
-          {/* Contact Information */}
           <div>
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-semibold text-[#1D3178]">Contact Information</h2>
-              <a href="#" className="text-sm text-blue-500 hover:underline">
-                Already have an account? Log in
-              </a>
-            </div>
+            <h2 className="text-lg font-semibold text-[#1D3178]">Contact Information</h2>
             <input
               type="email"
-              placeholder="Email or mobile phone number"
+              placeholder="Email"
               name="email"
               value={formData.email}
               onChange={handleChange}
               required
               className="w-full border-b-2 border-gray-300 bg-transparent p-2 focus:outline-none focus:border-pink-500"
             />
-            <div className="flex items-center mt-4">
-              <input type="checkbox" id="newsletter" className="mr-2" />
-              <label htmlFor="newsletter" className="text-sm text-gray-600">
-                Keep me up to date on news and exclusive offers
-              </label>
-            </div>
+            <input
+              type="tel"
+              placeholder="Phone"
+              name="phone"
+              value={formData.phone}
+              onChange={handleChange}
+              required
+              className="mt-2 w-full border-b-2 border-gray-300 bg-transparent p-2 focus:outline-none focus:border-pink-500"
+            />
           </div>
 
-          {/* Shipping Address */}
           <div>
             <h2 className="text-lg font-semibold mb-4 text-[#1D3178]">Shipping Address</h2>
-            <div className="grid grid-cols-2 gap-4">
-              <input
-                type="text"
-                placeholder="First name (optional)"
-                name="name"
-                value={formData.name}
-                onChange={handleChange}
-                className="w-full border-b-2 border-gray-300 bg-transparent p-2 focus:outline-none focus:border-pink-500"
-              />
-              <input
-                type="text"
-                placeholder="Last name"
-                className="w-full border-b-2 border-gray-300 bg-transparent p-2 focus:outline-none focus:border-pink-500"
-              />
-            </div>
+            <input
+              type="text"
+              placeholder="Name"
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              required
+              className="w-full border-b-2 border-gray-300 bg-transparent p-2 focus:outline-none focus:border-pink-500"
+            />
             <input
               type="text"
               placeholder="Address"
@@ -159,64 +184,50 @@ export default function CheckoutPage() {
                 className="w-full border-b-2 border-gray-300 bg-transparent p-2 focus:outline-none focus:border-pink-500"
               />
             </div>
-            <div className="mt-4">
-              <select
-                name="country"
-                value={formData.country}
-                onChange={handleChange}
-                className="w-full border-b-2 border-gray-300 bg-transparent p-2 focus:outline-none focus:border-pink-500"
-              >
-                <option value="Bangladesh">Bangladesh</option>
-                {/* Add more country options as needed */}
-              </select>
-            </div>
+            <select
+              name="country"
+              value={formData.country}
+              onChange={handleChange}
+              required
+              className="w-full mt-4 border-b-2 border-gray-300 bg-transparent p-2 focus:outline-none focus:border-pink-500"
+            >
+              <option value="Bangladesh">Bangladesh</option>
+            </select>
           </div>
 
-          {/* Shipment Method */}
           <div>
-            <h2 className="text-lg font-semibold mb-4 text-[#1D3178]">Shipment Method</h2>
-            <div className="grid grid-cols-2 gap-4">
-              <input
-                type="text"
-                placeholder="Carrier (e.g., FedEx)"
-                name="carrier"
-                value={formData.carrier}
-                onChange={handleChange}
-                className="w-full border-b-2 border-gray-300 bg-transparent p-2 focus:outline-none focus:border-pink-500"
-              />
-              <input
-                type="text"
-                placeholder="Tracking Number (optional)"
-                name="trackingNumber"
-                value={formData.trackingNumber}
-                onChange={handleChange}
-                className="w-full border-b-2 border-gray-300 bg-transparent p-2 focus:outline-none focus:border-pink-500"
-              />
-            </div>
+            <h2 className="text-lg font-semibold mb-4 text-[#1D3178]">Delivery Method</h2>
+            <select
+              name="deliveryMethod"
+              value={formData.deliveryMethod}
+              onChange={handleChange}
+              required
+              className="w-full border-b-2 border-gray-300 bg-transparent p-2 focus:outline-none focus:border-pink-500"
+            >
+              <option value="Standard">Standard</option>
+              <option value="Express">Express</option>
+              <option value="Overnight">Overnight</option>
+            </select>
           </div>
 
+          {error && <p className="text-red-500">{error}</p>}
           <button
             type="submit"
-            className="w-full py-3 bg-pink-500 text-white font-medium rounded-lg hover:bg-pink-600"
+            className="w-full py-3 bg-pink-500 text-white font-medium rounded-lg hover:bg-pink-600 disabled:opacity-50"
+            disabled={isLoading}
           >
-            Continue Shipping
+            {isLoading ? "Processing..." : "Proceed to Payment"}
           </button>
         </form>
       </div>
 
-      {/* Cart Summary Section */}
+      {/* Right Section: Order Summary */}
       <div>
         <div className="bg-gray-100 p-4 md:p-6 rounded-lg shadow-lg">
-          <h3 className="text-lg md:text-xl font-bold text-gray-800 mb-4">
-            Your Order
-          </h3>
+          <h3 className="text-lg md:text-xl font-bold text-gray-800 mb-4">Your Order</h3>
           <div className="space-y-4">
             {cartItems.map((item) => (
-              <div
-                key={item.currentSlug}
-                className="flex justify-between items-center"
-              >
-                {/* Product Details */}
+              <div key={item.id} className="flex justify-between items-center">
                 <div className="flex items-center gap-4">
                   <Image
                     src={urlFor(item.image).url()}
@@ -228,11 +239,10 @@ export default function CheckoutPage() {
                   <div>
                     <p className="font-medium">{item.name}</p>
                     <p className="text-sm text-gray-500">
-                      Size: {item.size || "N/A"} | Qty: {item.quantity}
+                      Qty: {item.quantity}
                     </p>
                   </div>
                 </div>
-                {/* Product Price */}
                 <div className="text-gray-800 font-medium">
                   ${item.price * item.quantity}
                 </div>
@@ -244,13 +254,14 @@ export default function CheckoutPage() {
             <span>Subtotal:</span>
             <span>${calculateSubtotal().toFixed(2)}</span>
           </div>
-          <div className="flex justify-between text-gray-800 font-medium mb-4">
-            <span>Totals:</span>
-            <span>${(calculateSubtotal() + 15).toFixed(2)}</span>
+          <div className="flex justify-between text-gray-800 font-medium mb-2">
+            <span>Shipping:</span>
+            <span>${calculateShipping(formData.deliveryMethod).toFixed(2)}</span>
           </div>
-          <button className="w-full bg-green-500 text-white py-2 rounded-md hover:bg-green-600">
-            Proceed to Checkout
-          </button>
+          <div className="flex justify-between text-gray-800 font-medium mb-4">
+            <span>Total:</span>
+            <span>${(calculateSubtotal() + calculateShipping(formData.deliveryMethod)).toFixed(2)}</span>
+          </div>
         </div>
       </div>
     </div>

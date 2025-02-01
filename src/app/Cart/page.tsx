@@ -1,4 +1,4 @@
-'use client'
+'use client';
 
 import { useCart } from "@/app/components/CartProvider";
 import Image from "next/image";
@@ -12,16 +12,16 @@ export default function CartPage() {
     cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
   return (
-    <div className="container mx-auto p-4 lg:p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div className="container mx-auto p-4 lg:p-6 grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-4xl">
       {/* Cart Items Section */}
       <div className="lg:col-span-2">
         <table className="w-full border-collapse border border-gray-300">
           <thead className="bg-gray-200 text-left">
             <tr>
-              <th className="p-2 md:p-4 border border-gray-300">Product</th>
-              <th className="p-2 md:p-4 border border-gray-300">Price</th>
-              <th className="p-2 md:p-4 border border-gray-300">Quantity</th>
-              <th className="p-2 md:p-4 border border-gray-300">Total</th>
+              <th className=" md:p-4 border border-gray-300">Product</th>
+              <th className=" md:p-4 border border-gray-300">Price</th>
+              <th className=" md:p-4 border border-gray-300 text-sm sm:text-base">Quantity</th>
+              <th className=" md:p-4 border border-gray-300">Total</th>
             </tr>
           </thead>
           <tbody>
@@ -44,16 +44,17 @@ export default function CartPage() {
                   ${item.price}
                 </td>
                 <td className="p-2 md:p-4 border border-gray-300">
-                  <div className="flex justify-center items-center gap-2">
+                  {/* Quantity buttons and number alignment */}
+                  <div className="flex flex-col items-center gap-2 sm:flex-row sm:gap-2">
                     <button
-                      className="px-2 py-1 border border-gray-300 bg-gray-100 rounded-md"
+                      className="px-2 py-1 border border-gray-300 bg-gray-100 rounded-md sm:w-auto"
                       onClick={() => addToCart({ ...item, quantity: item.quantity + 1 })}
                     >
                       +
                     </button>
-                    <span>{item.quantity}</span>
+                    <span className="text-sm sm:text-base">{item.quantity}</span>
                     <button
-                      className="px-2 py-1 border border-gray-300 bg-gray-100 rounded-md"
+                      className="px-2 py-1 border border-gray-300 bg-gray-100 rounded-md sm:w-auto"
                       onClick={() => removeFromCart(item.currentSlug)}
                     >
                       -

@@ -78,7 +78,8 @@ export default function ProductSection() {
     addToCart({
       ...product,
       quantity: 1,
-      _id: undefined
+      _id: undefined,
+      imageUrl: ''
     });
 
     // Set the popup message

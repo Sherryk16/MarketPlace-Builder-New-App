@@ -7,6 +7,13 @@ import Footer from "@/app/Footer/Footer";
 import BrandsSection from "@/app/BrandsSection/page"; // Ensure this is the correct path
 import CartProviderWrapper from "@/app/components/CartProvider"; // Ensure this is the correct path
 import { SearchProvider } from "@/app/Search/SearchContext";
+import {
+  ClerkProvider,
+  SignInButton,
+  SignedIn,
+  SignedOut,
+  UserButton
+} from '@clerk/nextjs'
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -30,13 +37,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
+   
     <html lang="en">
-      
+       <ClerkProvider>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         {/* Wrap the application with CartProviderWrapper */}
-
+       
        <SearchProvider>
         <CartProviderWrapper>
           <Head />
@@ -49,8 +57,11 @@ export default function RootLayout({
           <Footer />
         </CartProviderWrapper>
         </SearchProvider>
+     
       </body>
+      </ClerkProvider>
       
     </html>
+    
   );
 }

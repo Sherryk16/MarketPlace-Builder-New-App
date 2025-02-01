@@ -1,17 +1,21 @@
-'use client'
+"use client";
 
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect, Key } from "react";
+import { useUser } from "@clerk/nextjs"; // Import Clerk's `useUser` hook
 
-// Define a more specific type for image (if it's an object, adjust accordingly)
+// Define types for cart items
 interface SanityImage {
   asset: {
+    url(url: any): unknown;
     _ref: string;
     _type: string;
   };
-  url?: string;  // Add url property
+  url?: string; // Optional url for image
 }
 
 interface Product {
+  imageUrl: string;
+  id: Key | null | undefined;
   _id: any;
   currentSlug: string;
   name: string;
@@ -30,15 +34,31 @@ interface CartContextProps {
 const CartContext = createContext<CartContextProps | undefined>(undefined);
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { isSignedIn, user, isLoaded } = useUser(); // Clerk user info
   const [cartItems, setCartItems] = useState<Product[]>([]);
 
+  // Handle cart synchronization on mount
   useEffect(() => {
-    // Sync with localStorage on the client-side only
-    const storedCartItems = localStorage.getItem('cartItems');
-    if (storedCartItems) {
-      setCartItems(JSON.parse(storedCartItems));
+    if (isLoaded && isSignedIn && user) {
+      // If the user is signed in, load the cart from localStorage (no privateMetadata used here)
+      const storedCartItems = localStorage.getItem('cartItems');
+      if (storedCartItems) {
+        setCartItems(JSON.parse(storedCartItems));
+      }
+    } else {
+      // If not signed in, use localStorage for cart
+      const storedCartItems = localStorage.getItem('cartItems');
+      if (storedCartItems) {
+        setCartItems(JSON.parse(storedCartItems));
+      }
     }
-  }, []);
+  }, [isSignedIn, user, isLoaded]);
+
+  // Handle cart updates when cartItems change
+  useEffect(() => {
+    // For both signed-in and non-signed-in users, use localStorage to store the cart
+    localStorage.setItem('cartItems', JSON.stringify(cartItems));
+  }, [cartItems]);
 
   const addToCart = (product: Product) => {
     setCartItems((prevItems) => {
@@ -52,8 +72,6 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
         updatedCart = [...prevItems, { ...product, quantity: 1 }];
       }
 
-      // Sync cartItems with localStorage
-      localStorage.setItem('cartItems', JSON.stringify(updatedCart));
       return updatedCart;
     });
   };
@@ -61,8 +79,6 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const removeFromCart = (slug: string) => {
     setCartItems((prevItems) => {
       const updatedCart = prevItems.filter((item) => item.currentSlug !== slug);
-      // Sync cartItems with localStorage
-      localStorage.setItem('cartItems', JSON.stringify(updatedCart));
       return updatedCart;
     });
   };

@@ -91,10 +91,11 @@ export default function Navbar() {
 
   return (
     <div className="mb-5 relative z-50 flex flex-wrap items-center justify-between px-4 py-3 md:justify-around">
-      {/* Logo Section */}
+      <Link href={'/'}>
       <div className="font-bold text-[24px] md:text-[34px]">
         <h1>Hekto</h1>
       </div>
+      </Link>
 
       {/* Hamburger Menu Button for Mobile */}
       <div className="md:hidden">
@@ -123,6 +124,11 @@ export default function Navbar() {
             </li>
             {isDropdownOpen && (
               <ul className="absolute top-full left-0 bg-white shadow-lg rounded-md mt-2 w-40">
+                <Link href="/admin">
+                  <li className="px-4 py-2 hover:bg-gray-200 cursor-pointer">
+                   Admin Page
+                  </li>
+                </Link>
                 <Link href="/AboutUs">
                   <li className="px-4 py-2 hover:bg-gray-200 cursor-pointer">
                     About Us
