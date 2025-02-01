@@ -22,6 +22,8 @@ interface Product {
   category?: string;
   colour?: string;
   description?: string;
+  imageUrl?: string; // Add imageUrl property
+  id?: string; // Add id property
 }
 
 export default function Shop() {
@@ -77,6 +79,8 @@ export default function Shop() {
       ...product,
       quantity: 1,
       image: product.src,
+      imageUrl: product.src,  // Add imageUrl here (using src as imageUrl)
+      id: product._id,        // Add id here (using _id as id)
     });
 
     // Show popup message when item is added to cart
