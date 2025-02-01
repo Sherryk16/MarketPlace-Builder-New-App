@@ -1,8 +1,9 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 
+// Success Component
 const Success = () => {
   const [orderUpdated, setOrderUpdated] = useState(false);
   const searchParams = useSearchParams();
@@ -55,4 +56,11 @@ const Success = () => {
   );
 };
 
-export default Success;
+// Wrapper with Suspense
+const SuccessPageWithSuspense = () => (
+  <Suspense fallback={<div>Loading...</div>}>
+    <Success />
+  </Suspense>
+);
+
+export default SuccessPageWithSuspense;
