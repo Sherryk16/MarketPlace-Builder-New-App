@@ -69,9 +69,6 @@ export default function AdminPage() {
     if (isAuthenticated === 'true') {
       setIsAdmin(true);
       setLoginPage(false);
-    } else {
-      // If not authenticated, redirect to login page
-      router.push('/login'); // Redirect to login page
     }
   }, []); // Empty dependency array to run only on initial mount
 
