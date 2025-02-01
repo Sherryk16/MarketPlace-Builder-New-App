@@ -1,4 +1,4 @@
-'use client'; // Enable client-side behavior
+'use client';
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation"; // App Router-specific navigation
@@ -13,6 +13,7 @@ interface SanityImage {
   asset: {
     _ref: string;
     _type: string;
+    url: string; // Ensure the `url` is directly accessible
   };
   url?: string;
 }
@@ -25,6 +26,7 @@ interface Product {
   image: SanityImage;
   currentSlug: string;
   quantity: number;
+  imageUrl: string; // Added imageUrl field here
 }
 
 export default function FeatureProducts() {
@@ -65,24 +67,23 @@ export default function FeatureProducts() {
     fetchProducts();
   }, []);
 
-  // Navigate to the product detail page
   const handleNavigate = (slug: string) => {
     router.push(`/ProductDetail/${slug}`);
   };
 
-  // Handle adding a product to the cart
   const handleAddToCart = (product: Product) => {
     const productWithIdAndQuantity = {
       ...product,
       id: product.code,
       quantity: 1,
+      imageUrl: urlFor(product.image).url() ?? '', // Ensure we extract the imageUrl correctly
     };
+
     addToCart(productWithIdAndQuantity);
 
     // Set the popup message
     setPopupMessage(`${product.name} added to cart!`);
 
-    // Clear the message after 3 seconds
     setTimeout(() => {
       setPopupMessage(null);
     }, 5000);
@@ -97,7 +98,6 @@ export default function FeatureProducts() {
         Featured Products
       </div>
 
-      {/* Horizontal Scroll Container */}
       <div className="flex gap-6 overflow-x-auto px-4 sm:px-8 py-4">
         {products.map((item: Product) => (
           <div
@@ -145,7 +145,6 @@ export default function FeatureProducts() {
         ))}
       </div>
 
-      {/* Show the PopupMessage component */}
       {popupMessage && (
         <PopupMessage
           message={popupMessage}

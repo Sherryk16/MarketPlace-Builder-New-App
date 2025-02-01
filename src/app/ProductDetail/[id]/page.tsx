@@ -10,7 +10,7 @@ import Link from 'next/link';
 
 interface SanityImage {
   asset: {
-    url: any;
+    url: string;
     _ref: string;
     _type: string;
   };
@@ -23,6 +23,7 @@ interface Product {
   name: string;
   price: number;
   image: SanityImage;  // image can either be a string (URL) or a SanityImage object
+  imageUrl: string;    // Ensure imageUrl is included
   quantity: number;
   discountPrice?: number | null;
   reviews?: string;
@@ -31,6 +32,7 @@ interface Product {
   category?: string;
   colour?: string | string[];
   description?: string;
+  id: string;          // Ensure the id property is included
 }
 
 const SingleProductPage = () => {
@@ -48,20 +50,18 @@ const SingleProductPage = () => {
 
     const fetchProduct = async () => {
       try {
-        const query = `
-          *[_type in ["product", "latestProduct", "trendingProduct", "relatedProduct"] && slug.current == $slug] {
-            name,
-            price,
-            "src": image.asset->url,
-            discountPrice,
-            reviews,
-            tags,
-            category,
-            colour,
-            description,
-            _id
-          }
-        `;
+        const query = `*[_type in ["product", "latestProduct", "trendingProduct", "relatedProduct"] && slug.current == $slug] {
+          name,
+          price,
+          "src": image.asset->url,
+          discountPrice,
+          reviews,
+          tags,
+          category,
+          colour,
+          description,
+          _id
+        }`;
 
         const params = { slug: id };
 
@@ -75,6 +75,7 @@ const SingleProductPage = () => {
             name: fetchedProduct.name,
             price: typeof fetchedProduct.price === 'string' ? parseFloat(fetchedProduct.price) : fetchedProduct.price,
             image: fetchedProduct.src || '', // Directly assign the src or empty string
+            imageUrl: fetchedProduct.src || '', // Ensure imageUrl is correctly assigned
             quantity: 1,
             discountPrice: fetchedProduct.discountPrice || null,
             reviews: fetchedProduct.reviews || '',
@@ -83,6 +84,7 @@ const SingleProductPage = () => {
             category: fetchedProduct.category || '',
             colour: fetchedProduct.colour || [],
             description: fetchedProduct.description || '',
+            id: fetchedProduct._id, // Ensure the id is correctly assigned
           });
         } else {
           setError('Product not found');
@@ -123,6 +125,7 @@ const ProductDetail = ({ product }: { product: Product }) => {
       name: product.name,
       price: product.price,
       image: product.image,
+      imageUrl: getImageUrl(product.image), // Add imageUrl here
       quantity: 1,
       discountPrice: product.discountPrice,
       reviews: product.reviews,
@@ -131,6 +134,7 @@ const ProductDetail = ({ product }: { product: Product }) => {
       category: product.category,
       colour: product.colour,
       description: product.description,
+      id: product._id, // Add the id here
     };
     addToCart(productWithIdAndQuantity);
   };
@@ -231,11 +235,11 @@ const ProductDetail = ({ product }: { product: Product }) => {
 // Helper function to safely extract the image URL from the image field
 const getImageUrl = (image: SanityImage | string): string => {
   if (typeof image === 'string') {
-    return image; // Directly return if it's a string (URL)
+    return image; // If it's a string (URL), return it directly
   } else if (image?.asset?.url) {
     return image.asset.url; // Extract the URL if it's a SanityImage
   }
-  return '/placeholder-image.png'; // Fallback to a placeholder if no valid URL is found
+  return '/placeholder-image.png'; // Fallback
 };
 
 const DescriptionSection = ({ product }: { product: Product }) => {

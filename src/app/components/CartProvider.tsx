@@ -6,7 +6,7 @@ import { useUser } from "@clerk/nextjs"; // Import Clerk's `useUser` hook
 // Define types for cart items
 interface SanityImage {
   asset: {
-    url(url: any): unknown;
+    url: string; // Update to expect the actual url string, not a method
     _ref: string;
     _type: string;
   };
@@ -14,7 +14,7 @@ interface SanityImage {
 }
 
 interface Product {
-  imageUrl: string;
+  imageUrl: string; // Added imageUrl as required
   id: Key | null | undefined;
   _id: any;
   currentSlug: string;
@@ -40,13 +40,11 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Handle cart synchronization on mount
   useEffect(() => {
     if (isLoaded && isSignedIn && user) {
-      // If the user is signed in, load the cart from localStorage (no privateMetadata used here)
       const storedCartItems = localStorage.getItem('cartItems');
       if (storedCartItems) {
         setCartItems(JSON.parse(storedCartItems));
       }
     } else {
-      // If not signed in, use localStorage for cart
       const storedCartItems = localStorage.getItem('cartItems');
       if (storedCartItems) {
         setCartItems(JSON.parse(storedCartItems));
@@ -54,9 +52,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   }, [isSignedIn, user, isLoaded]);
 
-  // Handle cart updates when cartItems change
   useEffect(() => {
-    // For both signed-in and non-signed-in users, use localStorage to store the cart
     localStorage.setItem('cartItems', JSON.stringify(cartItems));
   }, [cartItems]);
 

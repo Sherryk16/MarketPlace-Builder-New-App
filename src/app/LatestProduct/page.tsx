@@ -14,8 +14,8 @@ interface SanityImage {
   asset: {
     _ref: string;
     _type: string;
+    url: string; // Ensure url is part of the image asset
   };
-  // Additional fields if necessary
 }
 
 interface Product {
@@ -27,6 +27,7 @@ interface Product {
   currentSlug: string;
   discount: number;
   quantity: number;
+  _id: string; // Adding _id field as required
 }
 
 export default function ProductSection() {
@@ -59,6 +60,7 @@ export default function ProductSection() {
           discount: item.discount || 0,
           currentSlug: item.currentSlug || '',
           quantity: 1, // Initialize quantity to 1
+          _id: item._id || item.code, // Ensure _id is set
         }));
         setProducts(formattedData);
       } catch (error) {
@@ -74,12 +76,14 @@ export default function ProductSection() {
   if (loading) return <p>Loading...</p>;
 
   const handleAddToCart = (product: Product) => {
-    // Add the product to the cart
+    // Ensure the image URL is properly set from the SanityImage object
+    const imageUrl = product.image.asset.url;
+
+    // Add the product to the cart with _id and imageUrl correctly set
     addToCart({
       ...product,
       quantity: 1,
-      _id: undefined,
-      imageUrl: ''
+      imageUrl: imageUrl, // Now we're using the correct image URL
     });
 
     // Set the popup message
